@@ -13,7 +13,7 @@ import axios from "axios";
 const Dashboard = () => {
   const navigate = useNavigate();
   const { loading, generatePage } = useSelector((state) => state.users);
-  const [url, setUrl] = useState();
+  const [url, setUrl] = useState({});
   const dispatch = useDispatch();
   const formik = useFormik({
     initialValues: {
@@ -31,7 +31,11 @@ const Dashboard = () => {
         dispatch(setGeneratePage(true));
 
         formik.resetForm();
-      } catch (error) {}
+      } catch (error) {
+        console.log(error)
+      }finally{
+        dispatch(setLoading(false));
+      }
     },
   });
   const handleLogout = () => {

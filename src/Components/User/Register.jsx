@@ -28,7 +28,7 @@ const Register = () => {
         dispatch(setLoading(true))
         const response = await axios.post(`${config.userApi}/register`,values)
         if(response.status===201){
-          toast.success(response.data.message, {
+          toast.success(response.data.message + "please kindly check your mail..", {
             position: 'top-center',
           });
         }
