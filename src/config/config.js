@@ -1,3 +1,3 @@
 export const config = {
-   userApi: 'https://user-authen.onrender.com' 
+   userApi: 'https://url-shortern-ory6.onrender.com' 
 }

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Logo from "./Icons/Logo";
 import { logout } from "./User/Auth/authService";
 import { useNavigate } from "react-router-dom";
@@ -7,32 +7,55 @@ import { useFormik } from "formik";
 import Loading from "./User/Loading";
 import { useDispatch, useSelector } from "react-redux";
 import { setGeneratePage } from "../features/UserReducer";
+import { config } from "../config/config";
+import axios from "axios";
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { loading,generatePage } = useSelector(state => state.users);
-  const dispatch = useDispatch()
+  const { loading, generatePage } = useSelector((state) => state.users);
+  const [url, setUrl] = useState();
+  const dispatch = useDispatch();
   const formik = useFormik({
     initialValues: {
-      url: "",
+      originalUrl: "",
     },
     validationSchema: Yup.object().shape({
-      url: Yup.string().required("The url is required"),
+      originalUrl: Yup.string().required("The url is required"),
     }),
     onSubmit: async (value) => {
       try {
-        dispatch(setGeneratePage(true))
-        formik.resetForm()
-      } catch (error) { }
+        dispatch(setGeneratePage(true));
+        const request = await axios.post(`${config.userApi}/short-url`, value);
+        console.log(request.data);
+        setUrl(request.data.url);
+
+        formik.resetForm();
+      } catch (error) {}
     },
   });
   const handleLogout = () => {
     logout();
     navigate("/");
   };
-  const handleBack=()=>{
-    dispatch(setGeneratePage(false))
-  }
+  const handleBack = () => {
+    dispatch(setGeneratePage(false));
+  };
+  // const handleClick = async () => {
+  //   try {
+  //     const response = await axios.get(
+  //       `${config.userApi}/${url.shortUrl}`
+  //     );
+  //     console.log(response.data.result)
+
+  //   } catch (error) {
+  //     console.error(error);
+  //   }
+  // };
+  // useEffect(()=>{
+  //   handleClick()
+  // },[])
+
+  // console.log(url)
   return (
     <article className="container">
       <hgroup className="row justify-content-center">
@@ -43,7 +66,11 @@ const Dashboard = () => {
                 <section className="col-lg-12 d-flex  p-5">
                   <div className="flex-grow-1">
                     <hgroup className="d-flex justify-content-center user-heading">
-                      <Logo width={60} height={60} className="me-3 fill-orange" />
+                      <Logo
+                        width={60}
+                        height={60}
+                        className="me-3 fill-orange"
+                      />
                       <h1 className="text-center  h1">Jet.ly</h1>
                     </hgroup>
 
@@ -63,65 +90,71 @@ const Dashboard = () => {
                     </button>
                   </div>
                 </section>
-                {
-                  generatePage ? (
-                    <div className="col-lg-7 pb-5 px-5">
-                  <div>
-                    <span>Short Url</span> <br />
-                    <a href=""></a>
+                {generatePage ? (
+                  <div className="col-lg-7 pb-5 px-5">
+                    {url && (
+                      <div className="p-3">
+                        <span>Short Url</span> <br />
+                        <a
+                          href={`${config.userApi}/${url.shortUrl}`}
+                          target="_blank"
+                        >{`${config.userApi}/${url.shortUrl}`}</a>
+                      </div>
+                    )}
+                    {url && (
+                      <div className="p-3">
+                        <span>Original Url</span> <br />
+                        <a href={`${url.originalUrl}`}>
+                          {`${url.originalUrl}`}
+                        </a>
+                      </div>
+                    )}
+                    <div className="text-center">
+                      <button className="btn btn-primary" onClick={handleBack}>
+                        Back to generatePage
+                      </button>
+                    </div>
                   </div>
-                  <div>
-                    <span>Original Url</span> <br />
-                    <a href=""></a>
-                  </div>
-                  <div className="text-center">
-                    <button className="btn btn-primary" onClick={handleBack}>Back to generatePage</button>
-                  </div>
-
-                </div>
-                  ) : (
-                    <form onSubmit={formik.handleSubmit} className="col-lg-7  pb-5 px-5">
-                  <fieldset className="form-group">
-                    <label htmlFor="url" className="h5">
-                      Enter your long url :
-                    </label>
-                    <input
-                      type="text"
-                      className={`form-control form-control-user ${formik.touched.url &&
-                        formik.errors.url ? "is-invalid" : ''}`}
-                      value={formik.values.url}
-                      name="url"
-                      id="url"
-                      onChange={formik.handleChange}
-                      onBlur={formik.handleBlur}
-                    />
-                    {
-                        formik.touched.url && formik.errors.url && (
-                          <span className="d-block ms-3 text-danger small invalid-feedback">
-                        {formik.errors.url}
-                      </span>
-                        )
-                      }
-                  </fieldset>
-                  <div className="form-group text-center">
-                  <button
-                    type="submit"
-                    className="btn btn-primary col-lg-5"
-                    
+                ) : (
+                  <form
+                    onSubmit={formik.handleSubmit}
+                    className="col-lg-7  pb-5 px-5"
                   >
-                    {
-                      loading ? <Loading /> : "Generate"
-                    }
-                  </button>
-                  </div>
-
-                </form>
-                  )
-                }
-                
-
-                
-
+                    <fieldset className="form-group">
+                      <label htmlFor="originalUrl" className="h5">
+                        Enter your long url :
+                      </label>
+                      <input
+                        type="text"
+                        className={`form-control form-control-user ${
+                          formik.touched.originalUrl &&
+                          formik.errors.originalUrl
+                            ? "is-invalid"
+                            : ""
+                        }`}
+                        value={formik.values.originalUrl}
+                        name="originalUrl"
+                        id="originalUrl"
+                        onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
+                      />
+                      {formik.touched.originalUrl &&
+                        formik.errors.originalUrl && (
+                          <span className="d-block ms-3 text-danger small invalid-feedback">
+                            {formik.errors.originalUrl}
+                          </span>
+                        )}
+                    </fieldset>
+                    <div className="form-group text-center">
+                      <button
+                        type="submit"
+                        className="btn btn-primary col-lg-5"
+                      >
+                        {loading ? <Loading /> : "Generate"}
+                      </button>
+                    </div>
+                  </form>
+                )}
               </section>
             </main>
           </section>
