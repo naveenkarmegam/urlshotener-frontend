@@ -6,7 +6,7 @@ import * as Yup from "yup";
 import { useFormik } from "formik";
 import Loading from "./User/Loading";
 import { useDispatch, useSelector } from "react-redux";
-import { setGeneratePage } from "../features/UserReducer";
+import { setGeneratePage, setLoading } from "../features/UserReducer";
 import { config } from "../config/config";
 import axios from "axios";
 
@@ -24,10 +24,11 @@ const Dashboard = () => {
     }),
     onSubmit: async (value) => {
       try {
-        dispatch(setGeneratePage(true));
+        dispatch(setLoading(true))
         const request = await axios.post(`${config.userApi}/short-url`, value);
         console.log(request.data);
         setUrl(request.data.url);
+        dispatch(setGeneratePage(true));
 
         formik.resetForm();
       } catch (error) {}
@@ -40,22 +41,6 @@ const Dashboard = () => {
   const handleBack = () => {
     dispatch(setGeneratePage(false));
   };
-  // const handleClick = async () => {
-  //   try {
-  //     const response = await axios.get(
-  //       `${config.userApi}/${url.shortUrl}`
-  //     );
-  //     console.log(response.data.result)
-
-  //   } catch (error) {
-  //     console.error(error);
-  //   }
-  // };
-  // useEffect(()=>{
-  //   handleClick()
-  // },[])
-
-  // console.log(url)
   return (
     <article className="container">
       <hgroup className="row justify-content-center">
@@ -104,7 +89,7 @@ const Dashboard = () => {
                     {url && (
                       <div className="p-3">
                         <span>Original Url</span> <br />
-                        <a href={`${url.originalUrl}`}>
+                        <a href={`${url.originalUrl}`} target="_blank">
                           {`${url.originalUrl}`}
                         </a>
                       </div>
